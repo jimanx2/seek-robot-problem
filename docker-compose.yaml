@@ -1,0 +1,13 @@
+services:
+  cli:
+    image: "jimanx2/seek-robot-problem"
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - APP_ENV=${APP_ENV:-development}
+    volumes:
+      - ${PWD}/app:/app
+    entrypoint: ["/usr/local/bin/ruby"]
+    # entrypoint: ["/bin/sh"]
+    tty: true

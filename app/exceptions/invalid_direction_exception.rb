@@ -1,0 +1,2 @@
+class InvalidDirectionException < Exception
+end

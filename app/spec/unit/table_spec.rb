@@ -8,15 +8,15 @@ RSpec.describe Table do
 
     describe "#initialize" do
         it "sets default width to 5" do
-        expect(table.width).to eq(5)
+            expect(table.width).to eq(5)
         end
 
         it "sets default length to 5" do
-        expect(table.length).to eq(5)
+            expect(table.length).to eq(5)
         end
 
         it "initializes an empty robots array" do
-        expect(table.robots).to be_empty
+            expect(table.robots).to be_empty
         end
     end
 

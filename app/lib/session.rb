@@ -9,9 +9,9 @@ class Session
     def get(key, fallback)
         value = @redis.get(key)
         unless value.nil?
-            _klass = value['class']
-            _data  = value['data']
-            value = _klass.new(_data)
+            klass = Object.const_get(value['class'])
+            data  = value['data']
+            value = klass.from_json(data)
         else
             value = fallback
         end
@@ -21,7 +21,4 @@ class Session
     def persist
 
     end
-
-    private
-    def _real_get 
 end

@@ -26,7 +26,7 @@ class Table
     #
     # @param [Robot] The robot object
     def add robot
-        unless @robots.includes(robot)
+        unless @robots.include?(robot)
             @robots << robot
         end
     end

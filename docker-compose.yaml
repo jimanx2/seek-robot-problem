@@ -17,6 +17,9 @@ services:
       - ${PWD}:/srv
     ports:
       - 3000:3000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     entrypoint: ["/usr/local/bin/bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
 
   cli:
@@ -30,3 +33,6 @@ services:
     stdin_open: false
     profiles:
       - cli
+
+  redis:
+    image: redis:alpine

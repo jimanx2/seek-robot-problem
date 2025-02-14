@@ -1,11 +1,14 @@
 require 'roda'
 require 'json'
+require 'redis'
+require 'securerandom'
 
 require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 
 require 'table'
 require 'robot'
+require 'session'
 require 'input_parser'
 require 'debug'
 
@@ -19,6 +22,7 @@ require 'commands/report_command'
 require 'entrypoints/entrypoint'
 require 'entrypoints/api_entrypoint'
 
+require './http/middlewares/session_middleware'
 require './http/server'
 
 run Http::Server

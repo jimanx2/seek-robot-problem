@@ -8,9 +8,19 @@ module Http
         end
 
         def handle_robot_request r
-            @api.process(r) do |executor, arguments|
+            res = @api.process(r) do |executor, arguments|
                 executor.execute(@robot, arguments)
             end
+
+            return {
+                status: 'success',
+                message: res || "Command executed successfully"
+            }
+        # rescue Exception => e
+        #     return {
+        #         status: 'error',
+        #         message: e.message
+        #     }
         end
 
         plugin :request_headers
@@ -19,35 +29,12 @@ module Http
         route do |r|
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'
-
-                begin
-                    res = handle_robot_request(r)
-                    response = {
-                        status: 'success',
-                        message: res || "Command executed successfully"
-                    }
-                rescue Exception => e
-                    response = {
-                        status: 'error',
-                        message: e.message
-                    }
-                end
+                handle_robot_request(r)
             end
             
             r.post 'api/robot', String do |command|
                 r.params['command'] = command.upcase
-                begin
-                    res = handle_robot_request(r)
-                    response = {
-                        status: 'success',
-                        message: res || "Command executed successfully"
-                    }
-                rescue Exception => e
-                    response = {
-                        status: 'error',
-                        message: e.message
-                    }
-                end
+                handle_robot_request(r)
             end         
         end
     end

@@ -77,7 +77,7 @@ unless @options[:repl].nil?
         # skip whitespace and comments
         next if input.downcase.empty? || input.downcase.start_with?('#')
 
-        # begin
+        begin
             # handle the command along with arguments, then capture the result
             result = @entrypoint.process(input) do |executor, arguments|
                 executor.execute(@robot1, arguments)
@@ -85,10 +85,10 @@ unless @options[:repl].nil?
 
             # show debug message if debug mode enabled
             debug("Robot: " + @robot1.report.inspect)
-        # rescue Exception => e
+        rescue Exception => e
             # show error message if debug mode enabled
-            # debug("Error: #{e.to_s}")
-        # end
+            debug("Error: #{e.to_s}")
+        end
     end
 
     # exit once done
@@ -108,8 +108,8 @@ loop do
         next if input.downcase.empty? || input.downcase.start_with?('#')
         
         # handle the command along with arguments, then capture the result
-        result = @entrypoint.process(input) do |executor|
-            executor.execute(@robot1)
+        result = @entrypoint.process(input) do |executor, arguments|
+            executor.execute(@robot1, arguments)
         end
 
         # show debug message if debug mode enabled

@@ -20,9 +20,7 @@ class CLIEntrypoint < Entrypoint
             command = MoveCommand.new
         when "REPORT"
             command = ReportCommand.new
-            arguments = {
-                print: true
-            }
+            arguments = [:print]
         else
             raise "Invalid command: #{command_str}"
         end

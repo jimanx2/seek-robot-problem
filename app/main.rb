@@ -10,6 +10,7 @@
 #   ruby main.rb -d < InputFile
 #
 
+# Pre loads all the required classes and modules
 require 'optparse'
 
 require 'exceptions/invalid_direction_exception'
@@ -35,6 +36,7 @@ include InputParser
 include Debug
 
 # BEGIN OPTION PARSER
+# Parse command line options
 @options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: ruby main.rb [options]"
@@ -58,6 +60,7 @@ load 'lib/signal_handler.rb'
 # Initialize the robot, and assign it above Table (for enumeration of max-width, max-length)
 @robot1 = Robot.new(@table)
 
+# Create CLI Entrypoint for command handling
 @entrypoint = CLIEntrypoint.new
 
 # handle REPL launch type
@@ -77,7 +80,7 @@ unless @options[:repl].nil?
         # skip whitespace and comments
         next if input.downcase.empty? || input.downcase.start_with?('#')
 
-        # begin
+        begin
             # handle the command along with arguments, then capture the result
             result = @entrypoint.process(input) do |executor, arguments|
                 executor.execute(@robot1, arguments)
@@ -85,17 +88,17 @@ unless @options[:repl].nil?
 
             # show debug message if debug mode enabled
             debug("Robot: " + @robot1.report.inspect)
-        # rescue Exception => e
+        rescue Exception => e
             # show error message if debug mode enabled
-            # debug("Error: #{e.to_s}")
-        # end
+            debug("Error: #{e.to_s}")
+        end
     end
 
     # exit once done
     exit 0
 end
 
-# handle non-REPL launch type
+# handle non-REPL launch type (eg: File processing)
 loop do 
     begin
         # Read user input
@@ -108,8 +111,8 @@ loop do
         next if input.downcase.empty? || input.downcase.start_with?('#')
         
         # handle the command along with arguments, then capture the result
-        result = @entrypoint.process(input) do |executor|
-            executor.execute(@robot1)
+        result = @entrypoint.process(input) do |executor, arguments|
+            executor.execute(@robot1, arguments)
         end
 
         # show debug message if debug mode enabled

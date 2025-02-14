@@ -1,3 +1,6 @@
+##
+# Debug - A helper module
+#
 module Debug
     ##
     # This is helper method for simplifying the debugging call

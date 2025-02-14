@@ -5,7 +5,7 @@ RSpec::Core::RakeTask.new(:spec) do |t|
     t.rspec_opts = "--format documentation"
 end
 
-task default: %w[cli:repl]
+task default: %w[non-interactive]
 
 desc 'Run all tests, even those usually excluded.'
 task :test do 
@@ -13,16 +13,15 @@ task :test do
     Rake::Task['spec'].invoke
 end
 
-namespace :cli do
-    cmd_args = (ARGV[2..-1].nil? ? [] : ARGV[2..-1]).join(' ')
+cmd_args = (ARGV[2..-1].nil? ? [] : ARGV[2..-1]).join(' ')
+debug_flag = "-d" if !cmd_args.index("-d") && !ENV['DEBUG'].nil? && ENV['DEBUG'] == "true"
 
-    debug_flag = "-d" if !cmd_args.index("-d") && !ENV['DEBUG'].nil? && ENV['DEBUG'] == "true"
+desc "Runs the REPL for line by line command processing"
+task :repl do
+    ruby "main.rb -r #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
+end
 
-    task :repl do
-        ruby "main.rb -r #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
-    end
-
-    task :"non-interactive" do
-        ruby "main.rb #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
-    end
+desc "Runs the non-interactive processing for inputs from STDIN (piping)"
+task :"non-interactive" do
+    ruby "main.rb #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
 end

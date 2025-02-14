@@ -1,4 +1,17 @@
-task default: %w[cli]
+require 'rspec/core/rake_task'
+
+# Define the "spec" task, at task load time rather than inside another task
+RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = "--format documentation"
+end
+
+task default: %w[cli:repl]
+
+desc 'Run all tests, even those usually excluded.'
+task :test do 
+    ENV['RUN_ALL_TESTS'] = 'true'
+    Rake::Task['spec'].invoke
+end
 
 namespace :cli do
     cmd_args = (ARGV[2..-1].nil? ? [] : ARGV[2..-1]).join(' ')

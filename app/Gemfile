@@ -1,0 +1,16 @@
+source "https://rubygems.org"
+
+# require exact ruby version
+ruby "3.4.1"
+
+# task management
+gem 'rake'
+
+# (unit) testing
+gem 'rspec'
+
+# api server deps
+gem "roda"
+gem "rack"
+gem "rackup", "~> 2.2"
+gem "webrick", "~> 1.9"

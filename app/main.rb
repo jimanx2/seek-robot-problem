@@ -12,10 +12,10 @@
 
 require 'optparse'
 
-require_relative './exceptions/invalid_direction_exception'
-require_relative './exceptions/outofbound_exception'
-require_relative './table'
-require_relative './robot'
+require 'exceptions/invalid_direction_exception'
+require 'exceptions/outofbound_exception'
+require 'table'
+require 'robot'
 
 # Declare valid commands so the CLI does not happen to process invalid one
 @valid_commands = ["PLACE", "LEFT", "RIGHT", "MOVE", "REPORT"]
@@ -107,7 +107,7 @@ end.parse!
 # END OPTION PARSER
 
 # This will set-up SIGNAL handling
-load './signal_handler.rb'
+load 'lib/signal_handler.rb'
 
 # Initialize the Table
 @table = Table.new(5,5)
@@ -120,10 +120,17 @@ unless @options[:repl].nil?
     puts "Use CTRL+D or issue an 'exit' command to quit the REPL"
 
     loop do
-        print "TABLE> "  # Prompt
-        input = (input = gets).nil? ? "exit" : input.chomp  # Read user input
-        break if input.downcase == "exit"  # Exit condition
-        next if input.downcase.empty?
+        # REPL Prompt
+        print "TABLE> "  
+
+        # Read user input
+        input = (input = gets).nil? ? "exit" : input.chomp  
+
+        # Exit condition
+        break if input.downcase == "exit"
+
+        # skip whitespace and comments
+        next if input.downcase.empty? || input.downcase.start_with?('#')
 
         begin
             # parse the input, then destructure input command, arguments array
@@ -147,9 +154,14 @@ end
 # handle non-REPL launch type
 loop do 
     begin
-        input = (input = gets).nil? ? "exit" : input.chomp  # Read user input
+        # Read user input
+        input = (input = gets).nil? ? "exit" : input.chomp  
+
+        # Exit condition
         break if input.downcase == "exit"
-        next if input.downcase.empty?
+
+        # skip whitespace and comments
+        next if input.downcase.empty? || input.downcase.start_with?('#')
         
         # parse the input, then destructure input command, arguments array
         command, arguments = parse_command input
@@ -162,6 +174,9 @@ loop do
     rescue Interrupt
         # handles CTRL+C
         break
+    rescue Exception => e
+        # show error message if debug mode enabled
+        debug("Error: #{e.message}")
     end
 end
 

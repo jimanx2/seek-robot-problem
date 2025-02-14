@@ -1,31 +1,85 @@
+##
+# Http - Module for the API entrypoint
+#
 module Http
+    ##
+    # This class represent the API server object for the Robot API
+    #
     class Server < Roda
+        # load plugin to access the request header
+        plugin :request_headers
+
+        # load plugin to respond with JSON format
+        plugin :json
+
+        # load plugin to enable request event hook
+        plugin :hooks 
+
+        # load and use the SessionMiddleware handler
+        # - this is used to store/load session data
+        #   from Redis
         use SessionMiddleware
 
+        ##
+        # constructor
+        # @params [Array] default arguments for Roda class
+        #
         def initialize args
+            # need to call this because parent class requires arguments
             super args
+
+            # initialize the ApiEntrypoint class
             @api = ApiEntrypoint.new
         end
 
+        ##
+        # Re-usable method to handle the request
+        # @params [Request] Rack request object
+        #
         def handle_robot_request r
+            # retrieve the robot object from request env
+            @robot = r.env['robot']
+
+            # trigger the ApiEntrypoint process, and get the result
+            # - the method will yield a function with two arguments:
+            #   executor and arguments, executor is one of the Command
+            #   classes
+            # - with executor, we can call the actual process on the
+            #   robot object via the .execute method
             res = @api.process(r) do |executor, arguments|
                 executor.execute(@robot, arguments)
             end
         end
 
-        plugin :request_headers
-        plugin :json
+        # before route hook
+        # load the session objects via header X-Session-Id
+        # if none, initialize a new X-Session-Id with a generated UUID.
+        # meanwhile, create a session instance to load objects from
+        # redis. then, assign respective objects to request env
+        before do 
+            request.env['session_id'] = request.headers['X-Session-Id'] || SecureRandom.uuid
+            session = request.env['session_driver'].from(request.env['session_id'])
+            request.env['session'] = session
+            request.env['table'] = session.get('table', Proc.new { Table.new(5,5) })
+            request.env['robot'] = session.get('robot', Proc.new { Robot.new(request.env['table']) })
+        end
 
+        # after route hook
+        # this will attempt to store and update the session objects value 
+        # back to redis using YAML serialization
+        # also, the X-Session-ID will be spit out to the API response
+        # header
+        after do 
+            request.env['session'].persist
+            response['X-Sessiond-Id'] = request.env['session_id']
+        end
+
+        # route definitions
         route do |r|
-            # get robot here
-            session_id = r.headers['X-Session-Id'] || SecureRandom.uuid
-            @session   = r.env['session'].from(session_id)
-            @table     = @session.get('table', Proc.new { Table.new(5,5) })
-            @robot     = @session.get('robot', Proc.new { Robot.new(@table) })
-
+            # GET /api/robot/report
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'
-                res = handle_robot_request(r, session)
+                res = handle_robot_request(r)
 
                 { :status => 'success', :message => res || "Command completed successfully" }
             rescue Exception => ex
@@ -33,6 +87,7 @@ module Http
                 next { :status => 'error', :message => ex.message }
             end
             
+            # POST /api/robot/:command
             r.post 'api/robot', String do |command|
                 r.params['command'] = command.upcase
                 res = handle_robot_request(r)
@@ -42,11 +97,6 @@ module Http
                 response.status = 400
                 next { :status => 'error', :message => ex.message }
             end 
-            
-            after do 
-                @session.persist
-                response['X-Sessiond-Id'] = session_id
-            end
         end
     end
 end

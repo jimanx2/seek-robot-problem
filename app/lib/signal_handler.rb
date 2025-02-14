@@ -1,3 +1,4 @@
+# Declare signal handlers for REPL CLI
 unless @options[:repl].nil?
     Signal.trap("INT") do
         puts "\nUse 'exit' to quit the REPL."  # Custom message

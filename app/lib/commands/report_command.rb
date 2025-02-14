@@ -1,3 +1,10 @@
+##
+# Command class for the LEFT command
+#
+class ReportCommand < Command
+    ##
+    # @inherit
+    #
 class ReportCommand < Command
     def execute robot, arguments
         if arguments[0] == :print

@@ -114,6 +114,8 @@ class Robot
 
         # otherwise, update the current position with simulation position
         @x, @y = [target_x, target_y]
+
+        return
     rescue OutofboundException
         raise "This movement will cause the robot to fall out."
     end

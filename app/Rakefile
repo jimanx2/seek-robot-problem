@@ -16,10 +16,12 @@ end
 cmd_args = (ARGV[2..-1].nil? ? [] : ARGV[2..-1]).join(' ')
 debug_flag = "-d" if !cmd_args.index("-d") && !ENV['DEBUG'].nil? && ENV['DEBUG'] == "true"
 
+desc "Runs the REPL for line by line command processing"
 task :repl do
     ruby "main.rb -r #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
 end
 
+desc "Runs the non-interactive processing for inputs from STDIN (piping)"
 task :"non-interactive" do
     ruby "main.rb #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
 end

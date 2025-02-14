@@ -1,13 +1,32 @@
 services:
-  cli:
+  base:
+    # built own version to prevent version mismatch when attempting
+    # to run at later time
     image: "jimanx2/seek-robot-problem"
     build:
       dockerfile: Dockerfile
       context: .
       args:
         - APP_ENV=${APP_ENV:-development}
+    profiles: 
+      - build
+
+  server:
+    image: "jimanx2/seek-robot-problem"
     volumes:
-      - ${PWD}/app:/app
-    entrypoint: ["/usr/local/bin/ruby"]
-    # entrypoint: ["/bin/sh"]
+      - ${PWD}:/srv
+    ports:
+      - 3000:3000
+    entrypoint: ["/usr/local/bin/bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
+
+  cli:
+    image: "jimanx2/seek-robot-problem"
+    volumes:
+      - ${PWD}:/srv
+    ports:
+      - 3000:3000
+    entrypoint: ["/usr/local/bin/bundle", "exec", "rake"]
     tty: true
+    stdin_open: false
+    profiles:
+      - cli

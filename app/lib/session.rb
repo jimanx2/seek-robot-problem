@@ -53,4 +53,33 @@ class Session
             end
         end
     end
+
+    ##
+    #
+    #
+    def with_session_lock
+        task_key = "{task::#{id}}"
+
+        task = @redis.hgetall(task_key)
+        if task.nil?
+            raise TaskNotExistException.new
+        elsif task["status"] == "pending"
+            expect_version = task["lock_version"]
+            
+            result = yield
+            current_version = @redis.hget(task_key, "status", "completed")
+            if current_version == expect_version
+                @redis.multi do
+                    @redis.hset(task_key, "status", "completed")
+                    @redis.hincrby(task_key, "lock_version", 1)
+                end
+
+                result
+            else
+                raise TaskSuperseededException.new
+            end
+        else
+            raise TaskAlreadyDoneException.new
+        end
+    end
 end

@@ -6,6 +6,6 @@ class HelloCommand < Command
     # @inherit
     #
     def execute robot, arguments
-        # TODO: Replace this with real implementation
+        "hello, #{arguments.first}"
     end
 end

@@ -29,6 +29,15 @@ class Session
         value = @redis.get(key)
         return @loaded_objects[key] = fallback.call if value.empty?
 
+        # check if value is valid YAML
+        begin 
+            YAML.parse!(value)
+        rescue
+            warn "#{key} does not contain a valid stored object representation (YAML)"
+            warn "using fallback value"
+            return @loaded_objects[key] = fallback.call
+        end
+
         # parse value into object and return it
         @loaded_objects[key] = YAML.safe_load(value, permitted_classes: [Robot, Table], aliases: true)
     end

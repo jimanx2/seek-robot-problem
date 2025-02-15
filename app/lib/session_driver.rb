@@ -4,6 +4,9 @@
 #
 class SessionDriver
 
+    # accessor for :redis
+    attr_reader :redis
+
     ##
     # Constructor - initialize Redis connection handle
     #

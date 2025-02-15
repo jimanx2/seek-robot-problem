@@ -29,6 +29,11 @@ class Robot
     # @params [Integer] Vertical position
     # @params [String]  Face direction, only accepts NORTH|WEST|SOUTH|EAST 
     def place x, y, direction
+        # checks if x and y is not valid value
+        unless x.is_a?(Integer) && y.is_a?(Integer)
+            raise InvalidArgumentException.new
+        end
+
         # checks if x is is valid range [0,table.length - 1]
         if 0 > x || x > @table.width - 1
             raise OutofboundException.new
@@ -50,6 +55,8 @@ class Robot
         @direction = @directions.index(direction)
 
         return
+    rescue InvalidArgumentException
+        raise "Argument passed is invalid"
     rescue OutofboundException
         raise "This placement is out of bound"
     rescue InvalidDirectionException
@@ -60,6 +67,9 @@ class Robot
     # This method will turn the robot facing 90deg counter-clockwise
     #
     def left
+        # ignore command if no facing direction yet
+        return if @direction.nil?
+
         # rotate the direction index to the end if it reach the first 
         if @direction - 1 < 0
             @direction = 3
@@ -76,6 +86,9 @@ class Robot
     # This method will turn the robot facing 90deg clockwise
     #
     def right
+        # ignore command if no facing direction yet
+        return if @direction.nil?
+
         # rotate the direction index to the start if it exceeds the last
         if @direction + 1 > @directions.count - 1
             @direction = 0 
@@ -124,7 +137,7 @@ class Robot
     # This method will return the robot's current position and face direction
     #
     def report
-        # ignore move commands when position not initialized
+        # ignore report commands when position not initialized
         return if @x.nil? || @y.nil? || @direction.nil?
         
         # returns the position and face direction in form of

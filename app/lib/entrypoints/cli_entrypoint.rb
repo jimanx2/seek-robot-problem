@@ -15,30 +15,15 @@ class CLIEntrypoint < Entrypoint
         # process the lines and return the command
         command_str, arguments = parse input_line
         
-        # select the correct Command class
-        # modify arguments as necessary
-        case command_str
-        when "PLACE"
-            command = PlaceCommand.new
-            arguments = [
-                arguments[0].to_i,
-                arguments[1].to_i,
-                arguments[2]
-            ]
-        when "LEFT"
-            command = LeftCommand.new
-        when "RIGHT"
-            command = RightCommand.new
-        when "MOVE"
-            command = MoveCommand.new
-        when "REPORT"
-            command = ReportCommand.new
-            arguments = [:print]
-        else
-            raise "Invalid command: #{command_str}"
+        # identify command
+        command = get_command(command_str)
+
+        # see if the arguments needs to be modified
+        if command.key?(:arg_modifier) && command[:arg_modifier].is_a?(Proc)
+            arguments = command[:arg_modifier].call(arguments) 
         end
 
         # execute the Proc passed by caller
-        yield command, arguments
+        yield command[:executor], arguments
     end
 end

@@ -26,6 +26,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.2)
+    thor (1.3.2)
     webrick (1.9.1)
 
 PLATFORMS
@@ -39,6 +40,7 @@ DEPENDENCIES
   redis (~> 5.3)
   roda
   rspec
+  thor (~> 1.3)
   webrick (~> 1.9)
 
 RUBY VERSION

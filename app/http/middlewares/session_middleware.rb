@@ -3,7 +3,8 @@
 # for the actual SessionDriver class
 #
 class SessionMiddleware
-
+    attr_reader :app, :session_driver
+    
     ##
     # Constructor - Assigns the @app and @session object
     # @params [App] A rack app

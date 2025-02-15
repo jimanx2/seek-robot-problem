@@ -37,6 +37,12 @@ RSpec.describe Robot do
 			end
 		end
 
+		context "when given non integer x and y coordinate" do 
+			it "raises an InvalidArgumentException" do 
+				expect { robot.place('A', 'B', 'SOUTH') }.to raise_error("Argument passed is invalid")
+			end
+		end
+
 		context "when given invalid direction" do
 			it "raises an InvalidDirectionException" do
 				expect { robot.place(1, 2, "INVALID_DIRECTION") }.to raise_error("This direction is not valid")
@@ -45,6 +51,11 @@ RSpec.describe Robot do
 	end
 
 	describe "#left" do
+		it "ignores the command if there is no direction yet" do
+			robot.left
+			expect(robot.direction).to eq(nil)
+		end
+
 		it "turns the robot 90 degrees counter-clockwise" do
 			robot.place(1, 1, "NORTH")
 			robot.left
@@ -62,6 +73,11 @@ RSpec.describe Robot do
 	end
 
 	describe "#right" do
+		it "ignores the command if there is no direction yet" do
+			robot.right
+			expect(robot.direction).to eq(nil)
+		end
+
 		it "turns the robot 90 degrees clockwise" do
 			robot.place(1, 1, "NORTH")
 			robot.right

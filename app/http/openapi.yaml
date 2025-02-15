@@ -1,0 +1,157 @@
+openapi: 3.0.0
+info:
+  description: 'Robot command'
+  version: 1.0.0
+  title: 'Laravel API'
+servers:
+  -
+    url: 'http://localhost:3000'
+    description: 'Local server'
+components:
+  schemas:
+    PlaceCommand:
+      description: 'in case of {command} = PLACE'
+      type: object
+      properties:
+        _comment:
+          type: string
+          example: "in case of {command} = PLACE"
+        x:
+          type: integer
+          format: int64
+        y:
+          type: integer
+          format: int64
+        direction:
+          type: string
+          enum: ['NORTH', 'WEST', 'SOUTH', 'EAST']
+paths:
+  /api/robot/report:
+    get:
+      summary: 'Get current robot position and direction'
+      description: ''
+      tags:
+        - Application
+      parameters:
+        - in: header
+          name: X-Session-Id
+          description: 'Session id to send command to, if not specified the system will assign new session id'
+          schema:
+            type: string
+            format: uuid
+          required: false
+      responses:
+        200:
+          description: 'Existing robot position and direction'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: object
+                    example: {
+                      "x": 1,
+                      "y": 1,
+                      "direction": "NORTH"
+                    }
+      operationId: robotReport
+      
+  /api/robot/{command}:
+    post:
+      summary: 'Send command to the robot entrypoint'
+      description: ''
+      tags:
+        - Application
+      parameters:
+        - in: header
+          name: X-Session-Id
+          description: 'Session id to send command to, if not specified the system will assign new session id'
+          schema:
+            type: string
+            format: uuid
+          required: false
+        - name: command
+          in: path
+          description: valid command (place, left, right, move, report)
+          required: true
+          schema:
+            type: string
+            enum: ['place', 'left', 'right', 'move', 'report']
+            example: 'place'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/PlaceCommand"
+                  
+      responses:
+        200:
+          description: 'Existing robot position and direction'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples: 
+                "command = place":
+                  value: {
+                    success: true,
+                    messsage: {
+                      "x": 1,
+                      "y": 1,
+                      "direction": "NORTH"
+                    }
+                  }
+                "command = left":
+                  value: {
+                    success: true,
+                    message: "Command has been executed successfully"
+                  }
+                "command = right":
+                  value: {
+                    success: true,
+                    message: "Command has been executed successfully"
+                  }
+                "command = move":
+                  value: {
+                    success: true,
+                    message: "Command has been executed successfully"
+                  }
+        400:
+          description: 'Error message from the entrypoint'
+          content:
+            application/json:
+              schema:
+                type: object
+              examples: 
+                "command = place - invalid arguments":
+                  value: {
+                    success: false,
+                    messsage: "Argument passed is invalid"
+                  }
+                "command = place - invalid direction":
+                  value: {
+                    success: false,
+                    message: "This direction is not valid"
+                  }
+                "command = place - out of bound":
+                  value: {
+                    success: false,
+                    message: "This placement is out of bound"
+                  }
+                "command = right":
+                  value: {
+                    success: false,
+                    message: "Command has been executed successfully"
+                  }
+                "command = move - out of bound":
+                  value: {
+                    success: false,
+                    message: "This placement is out of bound"
+                  }
+      operationId: robotCommand

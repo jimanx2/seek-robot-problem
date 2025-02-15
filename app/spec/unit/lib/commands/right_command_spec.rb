@@ -1,26 +1,26 @@
 require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 require 'commands/command'
-require 'commands/left_command'
+require 'commands/right_command'
 require 'robot'
 require 'table'
 
-RSpec.describe LeftCommand do
-    let(:command) { LeftCommand.new }
+RSpec.describe RightCommand do
+    let(:command) { RightCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 
     describe "#initialize" do
-        # it "inherits the Command class" do 
-        #     expect(LeftCommand).to inherit_from(Command)
-        # end
+        it "should inherit the command class" do 
+            expect(command.class.ancestors.include?(Command)).to eq(true)
+        end
     end 
 
     describe "#execute" do 
-        it "Invokes robot.left()" do
+        it "Invokes robot.right()" do
             expect(command.execute(robot, [])).to eq(nil)
             robot.place(1,1,'NORTH')
             command.execute(robot, [])
-            expect(robot.report).to eq({x:1, y:1, direction: 'WEST'})
+            expect(robot.report).to eq({x:1, y:1, direction: 'EAST'})
         end
     end
 end

@@ -2,7 +2,7 @@ require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 require 'redis'
 require 'session_driver'
-require_relative '../../http/middlewares/session_middleware'
+require_relative '../../../http/middlewares/session_middleware'
 
 RSpec.describe SessionMiddleware do
     class AppMock 

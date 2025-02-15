@@ -11,9 +11,9 @@ RSpec.describe PlaceCommand do
     let(:robot) { Robot.new(Table.new(5,5)) }
 
     describe "#initialize" do
-        # it "inherits the Command class" do 
-        #     expect(PlaceCommand).to inherit_from(Command)
-        # end
+        it "should inherit the command class" do 
+            expect(command.class.ancestors.include?(Command)).to eq(true)
+        end
     end 
 
     describe "#execute" do 

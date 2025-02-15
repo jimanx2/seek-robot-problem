@@ -1,0 +1,15 @@
+# these are examples of requiring dependencies to run this test
+# modify as you see fit
+#
+require 'commands/command'
+require 'commands/<%= command.downcase %>_command'
+
+RSpec.describe <%= command.capitalize %>Command do
+    let(:command) { <%= command.capitalize %>Command.new }
+
+    describe "#initialize" do 
+        it "should inherit the command class" do 
+            expect(command.class.ancestors.include?(Command)).to eq(true)
+        end
+    end 
+end

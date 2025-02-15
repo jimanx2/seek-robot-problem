@@ -1,4 +1,3 @@
-# command_generator.rb
 require 'thor'
 
 class CommandGenerator < Thor::Group
@@ -6,13 +5,17 @@ class CommandGenerator < Thor::Group
 
   argument :command
   argument :command_body, :optional => true, :default => "# TODO: Replace this with real implementation"
+  argument :spec_path, :optional => true, :default => "spec"
 
   def self.source_root
     File.dirname(__FILE__) + '/stub'
   end
 
   def create_command_file
-    if template "{command}_command.rb.tt", File.dirname(__FILE__) + "/#{command.downcase}_command.rb"
+    if (
+      template("{command}_command.rb.tt", File.dirname(__FILE__) + "/#{command.downcase}_command.rb") &&
+      template("spec/{command}_command_spec.rb.tt", spec_path + "/unit/lib/commands/#{command.downcase}_command_spec.rb")
+    )
       say "\nCommand file generated successfully. Now you may register this on any Entrypoint (CLIEntrypoint or ApiEntrypoint) " +
         "like this: \n\n", :green
       say <<-EOF

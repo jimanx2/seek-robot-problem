@@ -67,7 +67,7 @@ module Http
             #   classes
             # - with executor, we can call the actual process on the
             #   robot object via the .execute method
-            @session.with_optimistic_locking do
+            @session.with_session_lock do
                 res = @api.process(r) do |executor, arguments|
                     executor.execute(@robot, arguments)
                 end

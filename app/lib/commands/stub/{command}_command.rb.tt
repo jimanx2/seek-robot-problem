@@ -1,0 +1,11 @@
+##
+# Command class for the <%= command.upcase %> command
+#
+class <%= command.capitalize %>Command < Command
+    ##
+    # @inherit
+    #
+    def execute robot, arguments
+        <%= command_body %>
+    end
+end

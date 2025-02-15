@@ -1,6 +1,7 @@
 require 'rspec/core'
 require 'rspec/core/rake_task'
 require_relative 'spec/support/inherit_from_matcher'
+require 'commands/command_generator'
 
 # Define the "spec" task, at task load time rather than inside another task
 RSpec::Core::RakeTask.new(:spec) do |t|
@@ -31,3 +32,12 @@ desc "Runs the non-interactive processing for inputs from STDIN (piping)"
 task :"non-interactive" do
     ruby "main.rb #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
 end
+
+namespace :make do
+    desc "Generate a new command class"
+    task :command do 
+        raise 'Please set the NAME environment value' if ENV['NAME'].nil? || ENV['NAME'].empty?
+        CommandGenerator.start([ENV['NAME']])
+    end
+end
+

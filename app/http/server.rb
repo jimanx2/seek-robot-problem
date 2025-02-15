@@ -30,6 +30,24 @@ module Http
 
             # initialize the ApiEntrypoint class
             @api = ApiEntrypoint.new
+
+            # register PLACE command, since arguments in Hash format, we need to change it to 
+            # array format [x,y,direction]
+            @api.register_command "PLACE", executor: PlaceCommand.new, arg_modifier: (Proc.new do |arguments|
+                [arguments["x"].to_i, arguments["y"].to_i, arguments["direction"]]
+            end)
+
+            # register LEFT command
+            @api.register_command "LEFT", executor: LeftCommand.new
+
+            # register RIGHT command
+            @api.register_command "RIGHT", executor: RightCommand.new
+
+            # register MOVE command
+            @api.register_command "MOVE", executor: MoveCommand.new
+
+            # register REPORT command
+            @api.register_command "REPORT", executor: ReportCommand.new
         end
 
         ##

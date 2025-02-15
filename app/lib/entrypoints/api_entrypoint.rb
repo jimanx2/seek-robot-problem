@@ -13,32 +13,17 @@ class ApiEntrypoint < Entrypoint
     #
     def process request
         # process the request and return the command, arguments
-        command_str, arguments = parse_request request
+        command_str, arguments = parse_request(request)
         
-        # select the correct Command class
-        # modify arguments as necessary
-        case command_str
-        when "PLACE"
-            command = PlaceCommand.new
-            arguments = [
-                arguments["x"].to_i, 
-                arguments["y"].to_i, 
-                arguments["direction"]
-            ]
-        when "LEFT"
-            command = LeftCommand.new
-        when "RIGHT"
-            command = RightCommand.new
-        when "MOVE"
-            command = MoveCommand.new
-        when "REPORT"
-            command = ReportCommand.new
-        else
-            # raise an error if the command is unrecognized
-            raise "Invalid command: #{command_str}"
+        # identify command
+        command = get_command(command_str)
+
+        # see if the arguments needs to be modified
+        if command.key?(:arg_modifier) && command[:arg_modifier].is_a?(Proc)
+            arguments = command[:arg_modifier].call(arguments) 
         end
 
         # execute the Proc passed by caller
-        yield command, arguments
+        yield command[:executor], arguments
     end
 end

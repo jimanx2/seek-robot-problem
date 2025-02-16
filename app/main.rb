@@ -12,28 +12,17 @@
 
 # Pre loads all the required classes and modules
 require 'optparse'
+
 require 'table'
 require 'robot'
 
-require 'input_parser'
 require 'debug'
 
-include InputParser
 include Debug
 
-require 'exceptions/invalid_argument_exception'
-require 'exceptions/invalid_direction_exception'
-require 'exceptions/outofbound_exception'
-
-require 'commands/command'
-require 'commands/place_command'
-require 'commands/left_command'
-require 'commands/right_command'
-require 'commands/move_command'
-require 'commands/report_command'
-
-require 'entrypoints/entrypoint'
-require 'entrypoints/cli_entrypoint'
+require 'exceptions'
+require 'commands'
+require 'entrypoints'
 
 # BEGIN OPTION PARSER
 # Parse command line options
@@ -103,7 +92,7 @@ unless @options[:repl].nil?
 
         begin
             # handle the command along with arguments, then capture the result
-            result = @entrypoint.process(input) do |executor, arguments|
+            result = @entrypoint.process(input) do |executor, command, arguments|
                 executor.execute(@robot1, arguments)
             end
 

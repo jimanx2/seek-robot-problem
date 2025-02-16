@@ -8,4 +8,13 @@ class <%= command.capitalize %>Command < Command
     def execute robot, arguments
         <%= command_body %>
     end
+
+    ##
+    # @inherit
+    # 
+    # By default this returns true, uncomment the following to override
+    #
+    # def should_lock?
+    #     false
+    # end
 end

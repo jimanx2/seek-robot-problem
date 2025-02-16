@@ -1,3 +1,6 @@
+require 'yaml'
+require 'psych'
+
 ##
 # Class to load and store session data to Redis
 #
@@ -29,12 +32,12 @@ class Session
 
         # return early if the retrieved value is empty
         value = @redis.get(idp_key)
-        return @loaded_objects[idp_key] = fallback.call if value.empty?
+        return @loaded_objects[idp_key] = fallback.call if value.nil? || value.empty?
 
         # check if value is valid YAML
         begin 
-            YAML.parse!(value)
-        rescue
+            Psych.parse(value)
+        rescue Psych::SyntaxError => e
             warn "#{idp_key} does not contain a valid stored object representation (YAML)"
             warn "using fallback value"
             return @loaded_objects[idp_key] = fallback.call
@@ -57,31 +60,42 @@ class Session
     end
 
     ##
-    #
+    # Method to run the robot command in session lock to prevent
+    # race condition if the command will take time to execute
+    # A.K.A. real movement
+    # @param [Proc] proc to call after acquiring session lock
     #
     def with_session_lock
-        task_key = "{task::#{id}}"
+        lock_key = "{task::#{id}}"
 
-        task = @redis.hgetall(task_key)
-        if task.nil?
-            raise TaskNotExistException.new
-        elsif task["status"] == "pending"
-            expect_version = task["lock_version"]
-            
-            result = yield
-            current_version = @redis.hget(task_key, "status", "completed")
-            if current_version == expect_version
-                @redis.multi do
-                    @redis.hset(task_key, "status", "completed")
-                    @redis.hincrby(task_key, "lock_version", 1)
-                end
+        # check if there is existing lock
+        locked = @redis.exists(lock_key)
 
-                result
-            else
-                raise TaskSuperseededException.new
-            end
-        else
-            raise TaskAlreadyDoneException.new
+        # bailout if the session is locked
+        raise SessionLockedException.new if locked == 1
+
+        # no lock, attempt lock
+        @redis.watch(lock_key)
+
+        # use atomic operation
+        success = @redis.multi do |tx|
+            tx.set(lock_key, 1)
         end
+
+        # success will = nil when the lock has been set by other
+        # process
+        raise LockReservedException.new unless success
+        
+        # execute the proc
+        result = yield
+
+        # remove redis watch
+        @redis.unwatch
+
+        # then delete the lock
+        @redis.del(lock_key)
+
+        # return result
+        result
     end
 end

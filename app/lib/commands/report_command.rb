@@ -11,7 +11,14 @@ class ReportCommand < Command
             puts "#{result[:x]}, #{result[:y]}, #{result[:direction]}" unless result.nil?
             return
         end
-
+        
         robot.report()
+    end
+
+    ##
+    # @inherit
+    #
+    def should_lock?
+        false
     end
 end

@@ -1,3 +1,21 @@
+require 'roda'
+require 'json'
+require 'securerandom'
+
+require 'input_parser'
+require 'debug'
+require 'exceptions'
+require 'commands'
+require 'entrypoints'
+require 'session_driver'
+require 'entrypoints'
+
+require './http/jobs/command_executor_job'
+require './http/middlewares/session_middleware'
+
+require 'table'
+require 'robot'
+
 ##
 # Http - Module for the API entrypoint
 #
@@ -67,11 +85,27 @@ module Http
             #   classes
             # - with executor, we can call the actual process on the
             #   robot object via the .execute method
-            @session.with_session_lock do
-                res = @api.process(r) do |executor, arguments|
+            # - the executor has a method `should_lock?` to determine
+            #   whether a command should be run without race condition
+            #   use the @session.with_session_lock to exercise this
+            res = @api.process(r) do |executor, command, arguments|
+                # exception handled
+                begin 
+                    if executor.should_lock?
+                        return @session.with_session_lock do 
+                            executor.execute(@robot, arguments)
+                        end
+                    end
                     executor.execute(@robot, arguments)
+                rescue SessionLockedException
+                    # Queue the command
+                    Resque.enqueue(CommandExecutorJob, @session.id, command, arguments)
+                    raise "Robot busy. Command has been queued."
+                rescue LockReservedException
+                    raise "Robot cannot be reserved."
                 end
             end
+            return res
         end
 
         # before route hook

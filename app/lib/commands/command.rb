@@ -10,4 +10,12 @@ class Command
     def execute robot, arguments
         raise NotImplementedError, "Subclasses must implement the `execute` method"
     end
+
+    ##
+    # Abstract method to determine whether a command should use session lock
+    # Defaults to true
+    #
+    def should_lock?
+        true
+    end
 end

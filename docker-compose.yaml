@@ -21,6 +21,16 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     entrypoint: ["/usr/local/bin/bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
+  
+  worker:
+    image: "jimanx2/seek-robot-problem"
+    volumes:
+      - ${PWD}:/srv
+    environment:
+      - QUEUE=robot
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    entrypoint: ["/usr/local/bin/bundle", "exec", "rake", "resque:work"]
 
   cli:
     image: "jimanx2/seek-robot-problem"

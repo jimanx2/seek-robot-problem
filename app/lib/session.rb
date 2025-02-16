@@ -60,30 +60,42 @@ class Session
     end
 
     ##
-    #
+    # Method to run the robot command in session lock to prevent
+    # race condition if the command will take time to execute
+    # A.K.A. real movement
+    # @param [Proc] proc to call after acquiring session lock
     #
     def with_session_lock
         lock_key = "{task::#{id}}"
 
+        # check if there is existing lock
         locked = @redis.exists(lock_key)
 
+        # bailout if the session is locked
         raise SessionLockedException.new if locked == 1
 
         # no lock, attempt lock
         @redis.watch(lock_key)
 
+        # use atomic operation
         success = @redis.multi do |tx|
             tx.set(lock_key, 1)
         end
 
-        # cannot set lock
+        # success will = nil when the lock has been set by other
+        # process
         raise LockReservedException.new unless success
         
+        # execute the proc
         result = yield
 
+        # remove redis watch
         @redis.unwatch
+
+        # then delete the lock
         @redis.del(lock_key)
 
+        # return result
         result
     end
 end

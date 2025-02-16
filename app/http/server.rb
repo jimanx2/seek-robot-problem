@@ -33,8 +33,6 @@ module Http
         # load plugin to enable request event hook
         plugin :hooks 
 
-        plugin :middleware
-
         # load and use the SessionMiddleware handler
         # - this is used to store/load session data
         #   from Redis
@@ -135,11 +133,6 @@ module Http
 
         # route definitions
         route do |r|
-            r.on 'resque' do
-                env['SCRIPT_NAME'] = '' # Needed for Resque-Web to work properly
-                r.run Resque::Server.new
-            end
-
             # GET /api/robot/report
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'

@@ -6,7 +6,9 @@ require 'json'
 require 'redis'
 require 'securerandom'
 require 'yaml'
+require 'psych'
 
+require 'exceptions/task_superseeded_exception'
 require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 

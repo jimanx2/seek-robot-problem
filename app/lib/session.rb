@@ -29,12 +29,12 @@ class Session
 
         # return early if the retrieved value is empty
         value = @redis.get(idp_key)
-        return @loaded_objects[idp_key] = fallback.call if value.empty?
+        return @loaded_objects[idp_key] = fallback.call if value.nil? || value.empty?
 
         # check if value is valid YAML
         begin 
-            YAML.parse!(value)
-        rescue
+            Psych.parse(value)
+        rescue Psych::SyntaxError => e
             warn "#{idp_key} does not contain a valid stored object representation (YAML)"
             warn "using fallback value"
             return @loaded_objects[idp_key] = fallback.call
@@ -62,26 +62,53 @@ class Session
     def with_session_lock
         task_key = "{task::#{id}}"
 
-        task = @redis.hgetall(task_key)
-        if task.nil?
-            raise TaskNotExistException.new
-        elsif task["status"] == "pending"
-            expect_version = task["lock_version"]
-            
-            result = yield
-            current_version = @redis.hget(task_key, "status", "completed")
-            if current_version == expect_version
-                @redis.multi do
-                    @redis.hset(task_key, "status", "completed")
-                    @redis.hincrby(task_key, "lock_version", 1)
-                end
+        @redis.watch(task_key)
 
-                result
-            else
-                raise TaskSuperseededException.new
+        task = @redis.hgetall(task_key)
+        if task.empty?
+            # Initialize task inside a transaction to ensure atomicity
+            success = @redis.multi do
+                @redis.hset(task_key, "status", "pending")
+                @redis.hset(task_key, "lock_version", 0)
             end
-        else
-            raise TaskAlreadyDoneException.new
+        
+            raise TaskSuperseededException.new if success.nil? || success.empty?
+        
+            task = { 
+                "status" => "pending", 
+                "lock_version" => "0" 
+            }
+        elsif task["status"] == "completed"
+            # Reset completed task to pending for re-execution
+            success = @redis.multi do
+              @redis.hset(task_key, "status", "pending")
+              @redis.hincrby(task_key, "lock_version", 1)
+            end
+        
+            raise TaskSuperseededException.new if success.nil? || success.empty?
+        
+            task["status"] = "pending"
+            task["lock_version"] = (task["lock_version"].to_i + 1).to_s
+        end 
+
+        if task["status"] == "pending"
+            expect_version = task["lock_version"].to_i
+
+            current_version = @redis.hget(task_key, "lock_version").to_i
+            if current_version != expect_version
+              @redis.unwatch
+              raise TaskSuperseededException.new
+            end
+        
+            result = yield
+        
+            success = @redis.multi do
+              @redis.hset(task_key, "status", "completed")
+              @redis.hincrby(task_key, "lock_version", 1)
+            end
+
+            raise TaskSuperseededException.new if success.nil? || success.empty?
+            result
         end
     end
 end

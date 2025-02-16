@@ -58,14 +58,19 @@ module Http
             # retrieve the robot object from request env
             @robot = r.env['robot']
 
+            # retrieve the session object
+            @session = r.env['session']
+
             # trigger the ApiEntrypoint process, and get the result
             # - the method will yield a function with two arguments:
             #   executor and arguments, executor is one of the Command
             #   classes
             # - with executor, we can call the actual process on the
             #   robot object via the .execute method
-            res = @api.process(r) do |executor, arguments|
-                executor.execute(@robot, arguments)
+            @session.with_session_lock do
+                res = @api.process(r) do |executor, arguments|
+                    executor.execute(@robot, arguments)
+                end
             end
         end
 

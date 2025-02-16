@@ -1,3 +1,6 @@
+require 'yaml'
+require 'psych'
+
 ##
 # Class to load and store session data to Redis
 #

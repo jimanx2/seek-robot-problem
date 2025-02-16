@@ -14,4 +14,11 @@ class ReportCommand < Command
         
         robot.report()
     end
+
+    ##
+    # @inherit
+    #
+    def should_lock?
+        false
+    end
 end

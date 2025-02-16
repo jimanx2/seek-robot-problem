@@ -1,3 +1,5 @@
+require 'session'
+
 ##
 # Class to manage Session objects, also maintain
 # the handle to the redis connection

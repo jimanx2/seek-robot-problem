@@ -1,3 +1,21 @@
+require 'roda'
+require 'json'
+require 'securerandom'
+
+require 'input_parser'
+require 'debug'
+require 'exceptions'
+require 'commands'
+require 'entrypoints'
+require 'session_driver'
+require 'entrypoints'
+
+require './http/jobs/command_executor_job'
+require './http/middlewares/session_middleware'
+
+require 'table'
+require 'robot'
+
 ##
 # Http - Module for the API entrypoint
 #
@@ -14,6 +32,8 @@ module Http
 
         # load plugin to enable request event hook
         plugin :hooks 
+
+        plugin :middleware
 
         # load and use the SessionMiddleware handler
         # - this is used to store/load session data
@@ -67,11 +87,27 @@ module Http
             #   classes
             # - with executor, we can call the actual process on the
             #   robot object via the .execute method
-            @session.with_session_lock do
-                res = @api.process(r) do |executor, arguments|
+            # - the executor has a method `should_lock?` to determine
+            #   whether a command should be run without race condition
+            #   use the @session.with_session_lock to exercise this
+            res = @api.process(r) do |executor, command, arguments|
+                # exception handled
+                begin 
+                    if executor.should_lock?
+                        return @session.with_session_lock do 
+                            executor.execute(@robot, arguments)
+                        end
+                    end
                     executor.execute(@robot, arguments)
+                rescue SessionLockedException
+                    # Queue the command
+                    Resque.enqueue(CommandExecutorJob, @session.id, command, arguments)
+                    raise "Robot busy. Command has been queued."
+                rescue LockReservedException
+                    raise "Robot cannot be reserved."
                 end
             end
+            return res
         end
 
         # before route hook
@@ -99,28 +135,10 @@ module Http
 
         # route definitions
         route do |r|
-            r.get 'test-lock' do 
-                redis = r.env['session'].redis
-
-                # Initial setup
-                redis.hset("user:100", "name", "Alice")
-                redis.hset("user:100", "age", "25")
-
-                # Start watching the hash key
-                redis.watch("user:100")
-
-                # Another client modifies a field inside the hash
-                redis.hset("user:100", "age", "26")
-
-                # Start a transaction
-                result = redis.multi do |tx|
-                    tx.hset("user:100", "city", "New York")
-                    tx.hset("user:100", "city", "New York")
-                    tx.hset("user:100", "city", "New York")
-                end
-
-                result.inspect
-            end 
+            r.on 'resque' do
+                env['SCRIPT_NAME'] = '' # Needed for Resque-Web to work properly
+                r.run Resque::Server.new
+            end
 
             # GET /api/robot/report
             r.get 'api/robot/report' do

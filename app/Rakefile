@@ -1,7 +1,12 @@
 require 'rspec/core'
 require 'rspec/core/rake_task'
+require 'logger'
+require 'resque'
+require 'resque/tasks'
 require_relative 'spec/support/inherit_from_matcher'
 require 'commands/command_generator'
+
+require './http/jobs/command_executor_job'
 
 # Define the "spec" task, at task load time rather than inside another task
 RSpec::Core::RakeTask.new(:spec) do |t|
@@ -12,7 +17,10 @@ RSpec.configure do |config|
     config.include InheritFromMatcher
 end
 
-task default: %w[non-interactive]
+Resque.redis = "#{ENV['REDIS_HOST']}:#{ENV['REDIS_PORT']}"
+Resque.logger.level = Logger::DEBUG
+
+task default: %w[repl]
 
 desc 'Run all tests, even those usually excluded.'
 task :test do 

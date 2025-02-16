@@ -1,0 +1,6 @@
+require 'commands/command'
+require 'commands/place_command'
+require 'commands/left_command'
+require 'commands/right_command'
+require 'commands/move_command'
+require 'commands/report_command'

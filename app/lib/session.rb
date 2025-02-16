@@ -60,55 +60,27 @@ class Session
     #
     #
     def with_session_lock
-        task_key = "{task::#{id}}"
+        lock_key = "{task::#{id}}"
 
-        @redis.watch(task_key)
+        locked = @redis.exists(lock_key)
 
-        task = @redis.hgetall(task_key)
-        if task.empty?
-            # Initialize task inside a transaction to ensure atomicity
-            success = @redis.multi do
-                @redis.hset(task_key, "status", "pending")
-                @redis.hset(task_key, "lock_version", 0)
-            end
-        
-            raise TaskSuperseededException.new if success.nil? || success.empty?
-        
-            task = { 
-                "status" => "pending", 
-                "lock_version" => "0" 
-            }
-        elsif task["status"] == "completed"
-            # Reset completed task to pending for re-execution
-            success = @redis.multi do
-              @redis.hset(task_key, "status", "pending")
-              @redis.hincrby(task_key, "lock_version", 1)
-            end
-        
-            raise TaskSuperseededException.new if success.nil? || success.empty?
-        
-            task["status"] = "pending"
-            task["lock_version"] = (task["lock_version"].to_i + 1).to_s
-        end 
+        raise SessionLockedException.new if locked == 1
 
-        if task["status"] == "pending"
-            expect_version = task["lock_version"].to_i
+        # no lock, attempt lock
+        @redis.watch(lock_key)
 
-            current_version = @redis.hget(task_key, "lock_version").to_i
-            if current_version != expect_version
-              @redis.unwatch
-              raise TaskSuperseededException.new
-            end
-        
-            result = yield
-        
-            success = @redis.multi do
-              @redis.hset(task_key, "status", "completed")
-              @redis.hincrby(task_key, "lock_version", 1)
-            end
-
-            raise TaskSuperseededException.new if success.nil? || success.empty?
-            result
+        success = @redis.multi do |tx|
+            tx.set(lock_key, 1)
         end
+
+        # cannot set lock
+        raise LockReservedException.new unless success
+        
+        result = yield
+
+        @redis.unwatch
+        @redis.del(lock_key)
+
+        result
     end
 end

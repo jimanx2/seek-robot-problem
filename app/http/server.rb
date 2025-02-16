@@ -99,6 +99,29 @@ module Http
 
         # route definitions
         route do |r|
+            r.get 'test-lock' do 
+                redis = r.env['session'].redis
+
+                # Initial setup
+                redis.hset("user:100", "name", "Alice")
+                redis.hset("user:100", "age", "25")
+
+                # Start watching the hash key
+                redis.watch("user:100")
+
+                # Another client modifies a field inside the hash
+                redis.hset("user:100", "age", "26")
+
+                # Start a transaction
+                result = redis.multi do |tx|
+                    tx.hset("user:100", "city", "New York")
+                    tx.hset("user:100", "city", "New York")
+                    tx.hset("user:100", "city", "New York")
+                end
+
+                result.inspect
+            end 
+
             # GET /api/robot/report
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'

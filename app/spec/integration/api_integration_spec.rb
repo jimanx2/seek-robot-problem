@@ -133,24 +133,50 @@ RSpec.describe Http::Server, roda: :app, integration: true do
     end
 
     describe "POST /api/robot/move" do
-        before do
-            header 'X-Session-Id', @place_response.headers['x-session-id']
-            header 'Content-Type', 'text/plain'
-            header 'Content-Length', 0
-            post '/api/robot/move'
+        context "the robot is not at the table edge" do 
+            before do
+                header 'X-Session-Id', @place_response.headers['x-session-id']
+                header 'Content-Type', 'text/plain'
+                header 'Content-Length', 0
+                post '/api/robot/move'
+            end
+
+            it "responds with a success with code 200" do 
+                expect(last_response.status).to eq(200)
+            end
+
+            it "moved the robot a unit forward" do 
+                session_id = last_response.headers['x-session-id']
+                session = app.session_driver.from(session_id)
+
+                robot = session.get('robot', Proc.new { nil })
+
+                expect(robot.y).to eq(2)
+            end
         end
 
-        it "responds with a success with code 200" do 
-            expect(last_response.status).to eq(200)
-        end
+        context "the robot is at the table edge" do
+            before do
+                header 'Content-Type', 'application/json'
+                post '/api/robot/place', { x: 1, y: 4, direction: "NORTH" }.to_json
+                header 'X-Session-Id', last_response.headers['x-session-id']
+                header 'Content-Type', 'text/plain'
+                header 'Content-Length', 0
+                post '/api/robot/move'
+            end
 
-        it "moved the robot a unit forward" do 
-            session_id = last_response.headers['x-session-id']
-            session = app.session_driver.from(session_id)
+            it "should return failed with status 400" do 
+                expect(last_response.status).to eq(400)
+            end
 
-            robot = session.get('robot', Proc.new { nil })
+            it "should keep the robot at same position" do 
+                session_id = last_response.headers['x-session-id']
+                session = app.session_driver.from(session_id)
 
-            expect(robot.y).to eq(2)
+                robot = session.get('robot', Proc.new { nil })
+
+                expect([robot.x, robot.y, robot.direction]).to eq([1,4,0])
+            end
         end
     end
 

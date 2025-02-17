@@ -33,8 +33,8 @@ RSpec.describe Session do
     describe "#get" do 
         context "redis does not have requested key" do
             it "should return the fallback value" do
-                allow(redis_mock).to receive(:exists).with('hey').and_return(false)
-                allow(redis_mock).to receive(:get).with('hey').and_return(nil)
+                allow(redis_mock).to receive(:exists).with('{session:a-session-id}::hey').and_return(false)
+                allow(redis_mock).to receive(:get).with('{session:a-session-id}::hey').and_return(nil)
                 value = session.get("hey", Proc.new { "fallback" })
                 expect(value).to eq("fallback")
             end
@@ -42,13 +42,13 @@ RSpec.describe Session do
 
         context "redis has the requested key, but nil or empty" do
             it "should return the fallback value" do
-                allow(redis_mock).to receive(:exists).with('hey').and_return(false)
-                allow(redis_mock).to receive(:get).with('hey').and_return(nil)
+                allow(redis_mock).to receive(:exists).with('{session:a-session-id}::hey').and_return(false)
+                allow(redis_mock).to receive(:get).with('{session:a-session-id}::hey').and_return(nil)
                 value = session.get("hey", Proc.new { "fallback" })
                 expect(value).to eq("fallback")
 
-                allow(redis_mock).to receive(:exists).with('hey').and_return(true)
-                allow(redis_mock).to receive(:get).with('hey').and_return('')
+                allow(redis_mock).to receive(:exists).with('{session:a-session-id}::hey').and_return(true)
+                allow(redis_mock).to receive(:get).with('{session:a-session-id}::hey').and_return('')
                 value = session.get("hey", Proc.new { "fallback" })
                 expect(value).to eq("fallback")
             end
@@ -56,8 +56,8 @@ RSpec.describe Session do
 
         context "redis has the requested key, and not a valid YAML" do
             it "should return the fallback value" do
-                allow(redis_mock).to receive(:exists).with('hey').and_return(true)
-                allow(redis_mock).to receive(:get).with('hey').and_return("---\nname\n: Joe")
+                allow(redis_mock).to receive(:exists).with('{session:a-session-id}::hey').and_return(true)
+                allow(redis_mock).to receive(:get).with('{session:a-session-id}::hey').and_return(nil)
                 # expect(STDOUT).to receive(:warn).with('hey does not contain a valid stored object representation (YAML)')
                 value = session.get("hey", Proc.new { "fallback" })
                 expect(value).to eq("fallback")

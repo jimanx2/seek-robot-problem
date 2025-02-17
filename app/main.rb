@@ -121,7 +121,7 @@ loop do
         next if input.downcase.empty? || input.downcase.start_with?('#')
         
         # handle the command along with arguments, then capture the result
-        result = @entrypoint.process(input) do |executor, arguments|
+        result = @entrypoint.process(input) do |executor, command, arguments|
             executor.execute(@robot1, arguments)
         end
 

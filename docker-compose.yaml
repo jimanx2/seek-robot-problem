@@ -39,8 +39,6 @@ services:
     ports:
       - 3000:3000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rake"]
-    tty: true
-    stdin_open: false
     user: 1000:1000
     profiles:
       - cli

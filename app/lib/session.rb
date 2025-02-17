@@ -36,7 +36,7 @@ class Session
 
         # check if value is valid YAML
         begin 
-            Psych.parse(value)
+            Psych.load(value)
         rescue Psych::SyntaxError => e
             warn "#{idp_key} does not contain a valid stored object representation (YAML)"
             warn "using fallback value"

@@ -3,7 +3,7 @@ require 'exceptions/outofbound_exception'
 require 'table'
 require 'robot'
 
-RSpec.describe Robot do 
+RSpec.describe Robot, unit: true do 
 	let(:table) { Table.new(5,5) }
 	let(:robot) { Robot.new(table) }
   

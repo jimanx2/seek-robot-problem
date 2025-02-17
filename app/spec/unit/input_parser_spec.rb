@@ -1,6 +1,6 @@
 require 'input_parser'
 
-RSpec.describe InputParser do
+RSpec.describe InputParser, unit: true do
 
     include InputParser
     describe "#parse" do

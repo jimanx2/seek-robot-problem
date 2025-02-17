@@ -1,6 +1,6 @@
 require 'debug'
 
-RSpec.describe Debug do
+RSpec.describe Debug, unit: true do
 
     include Debug
     describe "#debug" do

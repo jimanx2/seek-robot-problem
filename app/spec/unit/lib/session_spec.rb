@@ -5,7 +5,7 @@ require 'yaml'
 require 'session'
 require 'session_driver'
 
-RSpec.describe Session do
+RSpec.describe Session, unit: true do
     let(:redis_mock) { instance_double(Redis) }
     let(:session) { Session.new(Redis.new, "a-session-id") }
 

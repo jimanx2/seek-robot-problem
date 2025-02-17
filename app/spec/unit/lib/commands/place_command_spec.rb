@@ -6,7 +6,7 @@ require 'commands/place_command'
 require 'robot'
 require 'table'
 
-RSpec.describe PlaceCommand do
+RSpec.describe PlaceCommand, unit: true do
     let(:command) { PlaceCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 

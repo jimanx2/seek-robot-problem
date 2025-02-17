@@ -5,7 +5,7 @@ require 'commands/left_command'
 require 'robot'
 require 'table'
 
-RSpec.describe LeftCommand do
+RSpec.describe LeftCommand, unit: true do
     let(:command) { LeftCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 

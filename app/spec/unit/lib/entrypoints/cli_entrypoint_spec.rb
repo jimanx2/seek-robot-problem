@@ -8,7 +8,7 @@ require 'entrypoints/cli_entrypoint'
 require 'commands/command'
 require 'commands/hello_command'
 
-RSpec.describe CLIEntrypoint do
+RSpec.describe CLIEntrypoint, unit: true do
     let(:entrypoint) { CLIEntrypoint.new }
 
     # Mock the input line

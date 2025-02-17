@@ -8,7 +8,7 @@ require 'entrypoints/api_entrypoint'
 require 'commands/command'
 require 'commands/hello_command'
 
-RSpec.describe ApiEntrypoint do
+RSpec.describe ApiEntrypoint, unit: true do
     let(:entrypoint) { ApiEntrypoint.new }
 
     # Mock the Rake request 

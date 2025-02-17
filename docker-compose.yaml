@@ -20,6 +20,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    user: 1000:1000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
   
   worker:
@@ -30,6 +31,7 @@ services:
       - QUEUE=robot
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    user: 1000:1000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rake", "resque:work"]
 
   cli:
@@ -39,8 +41,6 @@ services:
     ports:
       - 3000:3000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rake"]
-    tty: true
-    stdin_open: false
     user: 1000:1000
     profiles:
       - cli

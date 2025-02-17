@@ -22,12 +22,17 @@ class CommandExecutorJob
     # register MOVE command
     @entrypoint.register_command "MOVE", executor: MoveCommand.new
 
+    def self.with_session(session)
+        @session = session
+        self
+    end
+
     def self.perform(session_id, command, arguments = [])
-        @session = SessionDriver.new.from(session_id)
+        @session ||= SessionDriver.new.from(session_id)
         @robot = @session.get('robot', Proc.new { nil })
         
         raise 'Corrupt session' if @robot.nil?
-
+        
         executor = @entrypoint.get_command(command)
         executor[:executor].execute(@robot, arguments)
         

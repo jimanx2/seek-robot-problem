@@ -6,7 +6,8 @@ class MoveCommand < Command
     # @inherit
     #
     def execute robot, arguments
-        sleep rand(3)
+        delay = arguments.first
+        sleep(delay) unless delay.nil?
         robot.move()
     end
 end

@@ -4,7 +4,7 @@
 require 'commands/command'
 require 'commands/hello_command'
 
-RSpec.describe HelloCommand do
+RSpec.describe HelloCommand, unit: true do
     let(:command) { HelloCommand.new }
 
     describe "#initialize" do 

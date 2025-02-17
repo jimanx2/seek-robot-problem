@@ -8,7 +8,7 @@ require 'entrypoints/api_entrypoint'
 require 'commands/command'
 require 'commands/hello_command'
 
-RSpec.describe ApiEntrypoint do
+RSpec.describe ApiEntrypoint, unit: true do
     let(:entrypoint) { ApiEntrypoint.new }
 
     # Mock the Rake request 
@@ -54,7 +54,7 @@ RSpec.describe ApiEntrypoint do
             entrypoint.register_command "HELLO", executor: HelloCommand.new, arg_modifier: (Proc.new do |arguments|
                 [arguments["hello"]]
             end)
-            result = entrypoint.process(request) do |executor, arguments|
+            result = entrypoint.process(request) do |executor, command, arguments|
                 executor.execute(Robot.new(Table.new(5,5)), arguments)
             end
             expect(result).to eq("hello, world")

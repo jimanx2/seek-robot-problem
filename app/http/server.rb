@@ -42,7 +42,7 @@ module Http
         # constructor
         # @params [Array] default arguments for Roda class
         #
-        def initialize args
+        def initialize args={}
             # need to call this because parent class requires arguments
             super args
 
@@ -62,7 +62,9 @@ module Http
             @api.register_command "RIGHT", executor: RightCommand.new
 
             # register MOVE command
-            @api.register_command "MOVE", executor: MoveCommand.new
+            @api.register_command "MOVE", executor: MoveCommand.new, arg_modifier: (Proc.new do |arguments|
+                arguments.empty? ? arguments : [arguments["delay"].to_f]
+            end)
 
             # register REPORT command
             @api.register_command "REPORT", executor: ReportCommand.new
@@ -127,8 +129,8 @@ module Http
         # also, the X-Session-ID will be spit out to the API response
         # header
         after do 
-            request.env['session'].persist
-            response['X-Sessiond-Id'] = request.env['session_id']
+            request.env['session'].persist if response.status != 400
+            response['X-Session-Id'] = request.env['session_id']
         end
 
         # route definitions

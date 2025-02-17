@@ -2,7 +2,7 @@ require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 require 'table'
 
-RSpec.describe Table do
+RSpec.describe Table, unit: true do
     let(:table) { Table.new }  # A default 5x5 table
     let(:robot) { double("Robot") }  # Mocking the robot object
 

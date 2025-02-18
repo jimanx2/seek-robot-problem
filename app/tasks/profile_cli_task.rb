@@ -34,7 +34,7 @@ namespace :profiling do
 
             # Print top 10 methods
             methods.filter {|x| !x.full_name.include?('Thread') }.each do |method|
-                value = memory_in_kb ? method.send(metric).to_f / 1024 : method.send(metric)
+                value = memory_in_kb ? method.send(metric).to_f : method.send(metric)
                 calls = method.called  # Number of calls for this method
                 puts "#{method.full_name.ljust(40)} | Calls: #{calls.to_s.ljust(6)} | #{value.round(2)} #{unit}"
             end

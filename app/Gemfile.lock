@@ -80,6 +80,8 @@ GEM
       rspec (~> 3.0)
       rspec-its (~> 1.2.0)
     rspec-support (3.13.2)
+    ruby-prof (1.7.1)
+    ruby-prof (1.7.1-x86_64-linux-musl)
     ruby2_keywords (0.0.5)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
@@ -112,6 +114,7 @@ DEPENDENCIES
   roda
   rspec
   rspec-roda (~> 0.2.0)
+  ruby-prof (~> 1.7)
   thor (~> 1.3)
   webrick (~> 1.9)
 

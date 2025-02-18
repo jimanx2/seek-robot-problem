@@ -37,7 +37,29 @@ OptionParser.new do |opts|
   opts.on("-d", "--debug", "Show debug messages") do |v|
     @options[:debug] = v
   end
-end.parse!
+
+  opts.on("-f FILE", "--input-file=FILE", "Input file to read") do |v|
+    @options[:repl] = nil
+    @options[:input_file] = v
+  end
+
+  opts.on("-s", "--silence-output", "Shhh") do |v|
+    @options[:silence] = v
+  end
+end.parse!(@ARGV || ARGV)
+
+@input_file = nil
+unless @options[:input_file].nil?
+    @input_file = File.open(@options[:input_file], "r")
+end
+
+def getline 
+    if !@options[:input_file].nil? && !@input_file.nil?
+        return nil if @input_file.eof?
+        return @input_file.readline
+    end
+    gets
+end
 # END OPTION PARSER
 
 # This will set-up SIGNAL handling
@@ -70,7 +92,7 @@ end)
 # register REPORT command, we add :print here because
 # we wanted the robot to display the position and direction
 @entrypoint.register_command "REPORT", executor: ReportCommand.new, arg_modifier: (Proc.new do |arguments|
-    [:print]
+    @options[:silence].nil? ? [] : [:print]
 end)
 
 # handle REPL launch type
@@ -112,7 +134,7 @@ end
 loop do 
     begin
         # Read user input
-        input = (input = gets).nil? ? "exit" : input.chomp  
+        input = (input = getline).nil? ? "exit" : input.chomp  
 
         # Exit condition
         break if input.downcase == "exit"

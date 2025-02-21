@@ -1,11 +1,6 @@
-# seek-toy-robot-simulator
-
-This app purpose is to provide simulation for the Toy Robot Simulator
-
-Reference: https://www.slideshare.net/slideshow/toy-robot-simulator/46521787
-
+# Toy Robot Simulator
+#### _A showcase of expanding possibilities from a simple problem_
 # Overview
-
 ## Problem Statement
 
 The application is a simulation of a toy robot moving on a square tabletop, of dimension 5x5 units. 
@@ -24,39 +19,31 @@ The application is a simulation of a toy robot moving on a square tabletop, of d
 
 # Implementation Consideration
 
-- Choosing multiple patterns such as Polymorphism and Repository pattern. This is to make the application highly extensible.
-- Implement unit tests for all components. Also implement integration tests to ensure the application reliability.
+- Choosing multiple implementation patterns such as Polymorphism and Repository pattern. 
+  This is to make the application highly extensible.
+- Implement unit tests for all components. 
+  Also implement integration tests to ensure the application is compatible with multiple interfaces.
 - Execute a performance benchmark to establish a baseline and compare it to the norms
 - Implements a generator pattern for easy and quick maintenance process.
 - Use session based processing to maintain cross-entrypoint compatibility.
 - Use session locking to prevent race condition.
 
-# Deployment Guide
+# System Architecture
 
-## Local
+```mermaid
+architecture-beta
+    group api(cloud)[API]
 
-### Requirements
+    service db(database)[Redis] in api
+    service user1(server)[User 1] in api
+    service user2(server)[User 2] in api
+    service user3(server)[User 3] in api
+    service server(server)[Server] in api
+    service robot(disk)[Robot] in api
 
-- Docker Engine
-- Docker Compose
-
-1. Clone this repository
-$ git clone <repository link> <target>
-
-2. Go into the target directory
-$ cd <target>
-
-3. Build the base image
-$ docker-compose build base
-
-4. [optional] Start the services
-$ docker-compose up -d
-
-5. [optional] Start unit test
-$ docker-compose run --rm cli test
-
-6. Use the CLI REPL
-$ docker-compose run --rm cli
-> You can append DEBUG=true to the command, for enabling debug messages
-
-
+    db:R -- L:server
+    user1:B -- T:server
+    user2:B -- T:server
+    user3:B -- T:server
+    robot:T -- B:server
+```

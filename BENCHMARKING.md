@@ -14,3 +14,8 @@
    ```sh
    docker-compose run --rm benchmark
    ```
+
+> Pre-run benchmark report are available in API_BENCHMARK.md and CLI_BENCHMARK.md files. Test was run under the following PC spec:
+> CPU: Ryzen 5 3500
+> Memory: 32GB 4133Mhz
+> Storage: NVMe SSD

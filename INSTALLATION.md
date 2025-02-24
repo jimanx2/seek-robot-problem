@@ -15,4 +15,4 @@ To test this application you will need:
    `$ cd <REPO_DIR>`
 2. Run `docker-compose build base`
 3. Run `docker-compose up -d`
-4. Refer `http://localhost:3000/api/docs` for API documentation.
+4. Refer `http://localhost:3000/docs/index.html` for API documentation.

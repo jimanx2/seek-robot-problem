@@ -46,4 +46,15 @@ architecture-beta
     user2:B -- T:server
     user3:B -- T:server
     robot:T -- B:server
+
+    group cli(server)[CLI]
+
+    service dbB(database)[Redis] in cli
+    service userB(server)[User] in cli
+    service serverB(server)[Server] in cli
+    service robotB(disk)[Robot] in cli
+
+    dbB:B -- T:serverB
+    userB:T -- B:serverB
+    robotB:L -- R:serverB
 ```

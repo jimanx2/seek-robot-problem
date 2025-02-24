@@ -4,7 +4,7 @@ require 'redis'
 require 'session_driver'
 require_relative '../../../http/middlewares/session_middleware'
 
-RSpec.describe SessionMiddleware do
+RSpec.describe SessionMiddleware, unit: true do
     class AppMock 
         def call(env)
             return true

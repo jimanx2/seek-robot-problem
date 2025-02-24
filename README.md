@@ -64,4 +64,3 @@ architecture-beta
 1. [Deployment](https://github.com/jimanx2/seek-robot-problem/blob/main/INSTALLATION.md)
 2. [Adding New Command](https://github.com/jimanx2/seek-robot-problem/blob/main/COMMAND.md#adding-new-command)
 3. [Benchmarking](https://github.com/jimanx2/seek-robot-problem/blob/main/BENCHMARKING.md)
-

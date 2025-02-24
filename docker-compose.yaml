@@ -20,7 +20,19 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    user: 1000:1000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "3000"]
+  
+  worker:
+    image: "jimanx2/seek-robot-problem"
+    volumes:
+      - ${PWD}:/srv
+    environment:
+      - QUEUE=robot
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    user: 1000:1000
+    entrypoint: ["/usr/local/bin/bundle", "exec", "rake", "resque:work"]
 
   cli:
     image: "jimanx2/seek-robot-problem"
@@ -29,11 +41,17 @@ services:
     ports:
       - 3000:3000
     entrypoint: ["/usr/local/bin/bundle", "exec", "rake"]
-    tty: true
-    stdin_open: false
     user: 1000:1000
     profiles:
       - cli
 
+  benchmark:
+    image: "jordi/ab"
+    volumes: 
+      - ${PWD}:/srv
+    working_dir: "/srv/app"
+    command: ["-T", "application/json", "-p", "spec/fixtures/place.json", "-n", "100000", "-c", "200", "http://server:3000/api/robot/place"]
+    profiles:
+      - benchmark
   redis:
     image: redis:alpine

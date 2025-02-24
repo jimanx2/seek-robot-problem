@@ -1,3 +1,21 @@
+require 'roda'
+require 'json'
+require 'securerandom'
+
+require 'input_parser'
+require 'debug'
+require 'exceptions'
+require 'commands'
+require 'entrypoints'
+require 'session_driver'
+require 'entrypoints'
+
+require './http/jobs/command_executor_job'
+require './http/middlewares/session_middleware'
+
+require 'table'
+require 'robot'
+
 ##
 # Http - Module for the API entrypoint
 #
@@ -13,7 +31,11 @@ module Http
         plugin :json
 
         # load plugin to enable request event hook
-        plugin :hooks 
+        plugin :hooks
+        
+        # laod plugin to allow static file serving
+        opts[:root] = '/srv/app/http'
+        plugin :public, root: 'public'
 
         # load and use the SessionMiddleware handler
         # - this is used to store/load session data
@@ -24,7 +46,7 @@ module Http
         # constructor
         # @params [Array] default arguments for Roda class
         #
-        def initialize args
+        def initialize args={}
             # need to call this because parent class requires arguments
             super args
 
@@ -44,7 +66,9 @@ module Http
             @api.register_command "RIGHT", executor: RightCommand.new
 
             # register MOVE command
-            @api.register_command "MOVE", executor: MoveCommand.new
+            @api.register_command "MOVE", executor: MoveCommand.new, arg_modifier: (Proc.new do |arguments|
+                arguments.empty? ? arguments : [arguments["delay"].to_f]
+            end)
 
             # register REPORT command
             @api.register_command "REPORT", executor: ReportCommand.new
@@ -58,15 +82,36 @@ module Http
             # retrieve the robot object from request env
             @robot = r.env['robot']
 
+            # retrieve the session object
+            @session = r.env['session']
+
             # trigger the ApiEntrypoint process, and get the result
             # - the method will yield a function with two arguments:
             #   executor and arguments, executor is one of the Command
             #   classes
             # - with executor, we can call the actual process on the
             #   robot object via the .execute method
-            res = @api.process(r) do |executor, arguments|
-                executor.execute(@robot, arguments)
+            # - the executor has a method `should_lock?` to determine
+            #   whether a command should be run without race condition
+            #   use the @session.with_session_lock to exercise this
+            res = @api.process(r) do |executor, command, arguments|
+                # exception handled
+                begin 
+                    if executor.should_lock?
+                        return @session.with_session_lock do 
+                            executor.execute(@robot, arguments)
+                        end
+                    end
+                    executor.execute(@robot, arguments)
+                rescue SessionLockedException
+                    # Queue the command
+                    Resque.enqueue(CommandExecutorJob, @session.id, command, arguments)
+                    raise "Robot busy. Command has been queued."
+                rescue LockReservedException
+                    raise "Robot cannot be reserved."
+                end
             end
+            return res
         end
 
         # before route hook
@@ -88,12 +133,14 @@ module Http
         # also, the X-Session-ID will be spit out to the API response
         # header
         after do 
-            request.env['session'].persist
-            response['X-Sessiond-Id'] = request.env['session_id']
+            request.env['session'].persist if response.status != 400
+            response['X-Session-Id'] = request.env['session_id']
         end
 
         # route definitions
         route do |r|
+            r.public 
+
             # GET /api/robot/report
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'

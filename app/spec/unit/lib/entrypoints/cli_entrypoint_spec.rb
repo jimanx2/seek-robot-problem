@@ -8,7 +8,7 @@ require 'entrypoints/cli_entrypoint'
 require 'commands/command'
 require 'commands/hello_command'
 
-RSpec.describe CLIEntrypoint do
+RSpec.describe CLIEntrypoint, unit: true do
     let(:entrypoint) { CLIEntrypoint.new }
 
     # Mock the input line
@@ -29,7 +29,7 @@ RSpec.describe CLIEntrypoint do
             entrypoint.register_command "HELLO", executor: HelloCommand.new, arg_modifier: (Proc.new do |arguments|
                 [arguments[0]]
             end)
-            result = entrypoint.process(input) do |executor, arguments|
+            result = entrypoint.process(input) do |executor, command, arguments|
                 executor.execute(Robot.new(Table.new(5,5)), arguments)
             end
             expect(result).to eq("hello, world")

@@ -2,7 +2,7 @@ require 'exceptions/invalid_direction_exception'
 require 'exceptions/outofbound_exception'
 require 'commands/command'
 
-RSpec.describe Command do
+RSpec.describe Command, unit: true do
     let(:command) { Command.new }
 
     describe "#execute" do 

@@ -4,7 +4,7 @@ require 'redis'
 require 'session'
 require 'session_driver'
 
-RSpec.describe SessionDriver do
+RSpec.describe SessionDriver, unit: true do
     let(:redis_mock) { instance_double(Redis) }
     let(:driver) { SessionDriver.new }
 

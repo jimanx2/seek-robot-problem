@@ -5,7 +5,7 @@ require 'commands/right_command'
 require 'robot'
 require 'table'
 
-RSpec.describe RightCommand do
+RSpec.describe RightCommand, unit: true do
     let(:command) { RightCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 

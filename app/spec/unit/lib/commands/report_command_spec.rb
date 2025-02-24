@@ -5,7 +5,7 @@ require 'commands/report_command'
 require 'robot'
 require 'table'
 
-RSpec.describe ReportCommand do
+RSpec.describe ReportCommand, unit: true do
     let(:command) { ReportCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 

@@ -1,3 +1,5 @@
+require 'input_parser'
+
 ##
 # Entrypoint class for CLI
 #
@@ -24,6 +26,6 @@ class CLIEntrypoint < Entrypoint
         end
 
         # execute the Proc passed by caller
-        yield command[:executor], arguments
+        yield command[:executor], command_str, arguments
     end
 end

@@ -5,7 +5,7 @@ require 'commands/move_command'
 require 'robot'
 require 'table'
 
-RSpec.describe MoveCommand do
+RSpec.describe MoveCommand, unit: true do
     let(:command) { MoveCommand.new }
     let(:robot) { Robot.new(Table.new(5,5)) }
 

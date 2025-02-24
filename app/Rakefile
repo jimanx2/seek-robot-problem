@@ -1,22 +1,31 @@
 require 'rspec/core'
 require 'rspec/core/rake_task'
+require 'logger'
+require 'resque'
+require 'resque/tasks'
 require_relative 'spec/support/inherit_from_matcher'
 require 'commands/command_generator'
+
+require './http/jobs/command_executor_job'
 
 # Define the "spec" task, at task load time rather than inside another task
 RSpec::Core::RakeTask.new(:spec) do |t|
     t.rspec_opts = "--format documentation"
+    t.rspec_opts += " --tag unit" if ENV['SUITE'] == 'unit'
+    t.rspec_opts += " --tag integration" if ENV['SUITE'] == 'integration'
 end
 
 RSpec.configure do |config|
     config.include InheritFromMatcher
 end
 
-task default: %w[non-interactive]
+Resque.redis = "#{ENV['REDIS_HOST']}:#{ENV['REDIS_PORT']}"
+Resque.logger.level = Logger::DEBUG
 
-desc 'Run all tests, even those usually excluded.'
+task default: %w[repl] 
+
+desc 'Run unit tests.'
 task :test do 
-    ENV['RUN_ALL_TESTS'] = 'true'
     Rake::Task['spec'].invoke
 end
 
@@ -33,11 +42,6 @@ task :"non-interactive" do
     ruby "main.rb #{debug_flag} #{cmd_args}", verbose: debug_flag == "-d"
 end
 
-namespace :make do
-    desc "Generate a new command class"
-    task :command do 
-        raise 'Please set the NAME environment value' if ENV['NAME'].nil? || ENV['NAME'].empty?
-        CommandGenerator.start([ENV['NAME']])
-    end
+Dir.glob('./tasks/*.rb').each do |task| 
+    require task
 end
-

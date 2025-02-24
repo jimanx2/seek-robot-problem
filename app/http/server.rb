@@ -31,7 +31,11 @@ module Http
         plugin :json
 
         # load plugin to enable request event hook
-        plugin :hooks 
+        plugin :hooks
+        
+        # laod plugin to allow static file serving
+        opts[:root] = '/srv/app/http'
+        plugin :public, root: 'public'
 
         # load and use the SessionMiddleware handler
         # - this is used to store/load session data
@@ -135,6 +139,8 @@ module Http
 
         # route definitions
         route do |r|
+            r.public 
+
             # GET /api/robot/report
             r.get 'api/robot/report' do
                 r.params['command'] = 'REPORT'

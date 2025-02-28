@@ -23,6 +23,7 @@ include Debug
 require 'exceptions'
 require 'commands'
 require 'entrypoints'
+require 'patches/string'
 
 # BEGIN OPTION PARSER
 # Parse command line options
@@ -77,6 +78,10 @@ load 'lib/signal_handler.rb'
 # register PLACE command, the value of x and y are in string, need to cast to integer
 @entrypoint.register_command "PLACE", executor: PlaceCommand.new, arg_modifier: (Proc.new do |arguments|
     x, y, direction = arguments
+
+    # do not accept positional arguments that can be numerized. example: '21
+    raise InvalidArgumentException.new('Invalid argument type for x and y') if !x.numeric? or !y.numeric?
+
     [x.to_i, y.to_i, direction]
 end)
 

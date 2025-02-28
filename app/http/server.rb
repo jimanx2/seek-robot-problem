@@ -10,6 +10,7 @@ require 'entrypoints'
 require 'session_driver'
 require 'entrypoints'
 
+require 'patches/string'
 require './http/jobs/command_executor_job'
 require './http/middlewares/session_middleware'
 
@@ -56,6 +57,9 @@ module Http
             # register PLACE command, since arguments in Hash format, we need to change it to 
             # array format [x,y,direction]
             @api.register_command "PLACE", executor: PlaceCommand.new, arg_modifier: (Proc.new do |arguments|
+                # do not accept positional arguments that can be numerized. example: '21
+                raise InvalidArgumentException.new('Invalid argument type for x and y') if !arguments["x"].to_s.numeric? or !arguments["y"].to_s.numeric?
+
                 [arguments["x"].to_i, arguments["y"].to_i, arguments["direction"]]
             end)
 
